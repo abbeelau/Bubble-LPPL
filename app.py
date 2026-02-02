@@ -271,12 +271,14 @@ def main():
     with st.sidebar:
         st.markdown("### ⚙️ Configuration")
         
-        symbol = st.selectbox(
-            "Index Symbol",
-            ["^NDX", "^GSPC", "^DJI", "^IXIC", "QQQ", "SPY"],
-            index=0,
-            help="Select the index to analyze"
-        )
+        symbol = st.text_input(
+            "Ticker Symbol",
+            value="^NDX",
+            help="Enter any ticker: ^NDX, ^GSPC, QQQ, SPY, SLV, GLD, AAPL, etc."
+        ).upper().strip()
+        
+        if not symbol:
+            symbol = "^NDX"
         
         lookback_years = st.slider(
             "Data Lookback (Years)",
@@ -342,9 +344,17 @@ def main():
         st.error("Failed to load data. Please try again.")
         return
     
-    # Handle both single and multi-level column names
+    # Handle both single and multi-level column names from yfinance
     if isinstance(data.columns, pd.MultiIndex):
-        close = data["Close"][symbol.replace("^", "")].dropna() if symbol.replace("^", "") in data["Close"].columns else data["Close"].iloc[:, 0].dropna()
+        # Multi-level columns: try to get the Close price
+        if "Close" in data.columns.get_level_values(0):
+            close_df = data["Close"]
+            if isinstance(close_df, pd.DataFrame):
+                close = close_df.iloc[:, 0].dropna()
+            else:
+                close = close_df.dropna()
+        else:
+            close = data.iloc[:, 0].dropna()
     else:
         close = data["Close"].dropna()
     
