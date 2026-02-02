@@ -483,14 +483,24 @@ def main():
                 marker_line_width=1
             ))
             
-            # Add vertical lines for percentiles
+            # Add vertical lines for percentiles using shapes (avoiding plotly bug)
             for q, label, color in [(q20, '20%', '#7b2cbf'), (q50, '50%', '#ff006e'), (q80, '80%', '#7b2cbf')]:
-                fig_hist.add_vline(
-                    x=q.isoformat() if hasattr(q, 'isoformat') else str(q), 
-                    line_dash="dash", 
-                    line_color=color,
-                    annotation_text=label, 
-                    annotation_position="top"
+                q_str = q.isoformat() if hasattr(q, 'isoformat') else str(q)
+                fig_hist.add_shape(
+                    type="line",
+                    x0=q_str, x1=q_str,
+                    y0=0, y1=1,
+                    yref="paper",
+                    line=dict(color=color, width=2, dash="dash")
+                )
+                fig_hist.add_annotation(
+                    x=q_str,
+                    y=1,
+                    yref="paper",
+                    text=label,
+                    showarrow=False,
+                    yshift=10,
+                    font=dict(color=color, size=12)
                 )
             
             fig_hist.update_layout(
@@ -520,22 +530,48 @@ def main():
             line=dict(color='#00d4ff', width=2)
         ))
         
-        # Add shaded region for critical window
-        fig_price.add_vrect(
-            x0=q20.isoformat() if hasattr(q20, 'isoformat') else str(q20), 
-            x1=q80.isoformat() if hasattr(q80, 'isoformat') else str(q80),
+        # Add shaded region for critical window using shape
+        q20_str = q20.isoformat() if hasattr(q20, 'isoformat') else str(q20)
+        q50_str = q50.isoformat() if hasattr(q50, 'isoformat') else str(q50)
+        q80_str = q80.isoformat() if hasattr(q80, 'isoformat') else str(q80)
+        
+        fig_price.add_shape(
+            type="rect",
+            x0=q20_str, x1=q80_str,
+            y0=0, y1=1,
+            yref="paper",
             fillcolor="rgba(255, 0, 110, 0.15)",
-            layer="below", line_width=0,
-            annotation_text="Critical Window",
-            annotation_position="top left"
+            line_width=0,
+            layer="below"
+        )
+        fig_price.add_annotation(
+            x=q20_str,
+            y=1,
+            yref="paper",
+            text="Critical Window",
+            showarrow=False,
+            xanchor="left",
+            yshift=10,
+            font=dict(color="#ff006e", size=12)
         )
         
-        # Median line
-        fig_price.add_vline(
-            x=q50.isoformat() if hasattr(q50, 'isoformat') else str(q50), 
-            line_dash="dash", 
-            line_color="#ff006e",
-            annotation_text="Median tc"
+        # Median line using shape
+        fig_price.add_shape(
+            type="line",
+            x0=q50_str, x1=q50_str,
+            y0=0, y1=1,
+            yref="paper",
+            line=dict(color="#ff006e", width=2, dash="dash")
+        )
+        fig_price.add_annotation(
+            x=q50_str,
+            y=0.95,
+            yref="paper",
+            text="Median tc",
+            showarrow=False,
+            xanchor="left",
+            xshift=5,
+            font=dict(color="#ff006e", size=11)
         )
         
         fig_price.update_layout(
