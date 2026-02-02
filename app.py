@@ -31,9 +31,30 @@ st.markdown("""
         background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #0f0f1a 100%);
     }
     
-    h1, h2, h3 {
+    /* Main text colors - bright and readable */
+    .stApp, .stApp p, .stApp span, .stApp div, .stApp label {
+        color: #f0f0f0 !important;
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
         font-family: 'Space Grotesk', sans-serif !important;
-        color: #e0e0e0 !important;
+        color: #ffffff !important;
+    }
+    
+    /* Markdown text */
+    .stMarkdown, .stMarkdown p, .stMarkdown li, .stMarkdown span {
+        color: #f0f0f0 !important;
+    }
+    
+    /* Sidebar text */
+    section[data-testid="stSidebar"] * {
+        color: #f0f0f0 !important;
+    }
+    
+    section[data-testid="stSidebar"] h1,
+    section[data-testid="stSidebar"] h2,
+    section[data-testid="stSidebar"] h3 {
+        color: #ffffff !important;
     }
     
     .main-title {
@@ -49,15 +70,15 @@ st.markdown("""
     
     .subtitle {
         font-family: 'JetBrains Mono', monospace;
-        color: #888;
+        color: #b0b0b0 !important;
         text-align: center;
         font-size: 0.9rem;
         margin-bottom: 2rem;
     }
     
     .metric-card {
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.15);
         border-radius: 12px;
         padding: 1.5rem;
         margin: 0.5rem 0;
@@ -66,7 +87,7 @@ st.markdown("""
     
     .metric-label {
         font-family: 'JetBrains Mono', monospace;
-        color: #888;
+        color: #c0c0c0 !important;
         font-size: 0.75rem;
         text-transform: uppercase;
         letter-spacing: 1px;
@@ -74,25 +95,35 @@ st.markdown("""
     
     .metric-value {
         font-family: 'Space Grotesk', sans-serif;
-        color: #00d4ff;
+        color: #00d4ff !important;
         font-size: 1.8rem;
         font-weight: 600;
     }
     
     .warning-box {
-        background: rgba(255, 0, 110, 0.1);
-        border: 1px solid rgba(255, 0, 110, 0.3);
+        background: rgba(255, 0, 110, 0.15);
+        border: 1px solid rgba(255, 0, 110, 0.4);
         border-radius: 8px;
         padding: 1rem;
         margin: 1rem 0;
+        color: #ffffff !important;
+    }
+    
+    .warning-box * {
+        color: #ffffff !important;
     }
     
     .info-box {
-        background: rgba(0, 212, 255, 0.1);
-        border: 1px solid rgba(0, 212, 255, 0.3);
+        background: rgba(0, 212, 255, 0.15);
+        border: 1px solid rgba(0, 212, 255, 0.4);
         border-radius: 8px;
         padding: 1rem;
         margin: 1rem 0;
+        color: #ffffff !important;
+    }
+    
+    .info-box * {
+        color: #e0e0e0 !important;
     }
     
     .stSidebar {
@@ -103,13 +134,39 @@ st.markdown("""
         font-family: 'JetBrains Mono', monospace;
     }
     
+    /* Metrics styling */
     div[data-testid="stMetricValue"] {
         font-family: 'Space Grotesk', sans-serif;
         font-size: 1.5rem;
+        color: #00d4ff !important;
+    }
+    
+    div[data-testid="stMetricLabel"] {
+        color: #d0d0d0 !important;
+    }
+    
+    div[data-testid="stMetricDelta"] {
+        color: #b0b0b0 !important;
     }
     
     .stProgress > div > div {
         background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+    }
+    
+    /* Expander */
+    .streamlit-expanderHeader {
+        color: #ffffff !important;
+    }
+    
+    /* Table text */
+    .stDataFrame * {
+        color: #f0f0f0 !important;
+    }
+    
+    /* Button styling */
+    .stButton > button {
+        color: #ffffff !important;
+        font-weight: 600;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -429,8 +486,11 @@ def main():
             # Add vertical lines for percentiles
             for q, label, color in [(q20, '20%', '#7b2cbf'), (q50, '50%', '#ff006e'), (q80, '80%', '#7b2cbf')]:
                 fig_hist.add_vline(
-                    x=q, line_dash="dash", line_color=color,
-                    annotation_text=label, annotation_position="top"
+                    x=q.isoformat() if hasattr(q, 'isoformat') else str(q), 
+                    line_dash="dash", 
+                    line_color=color,
+                    annotation_text=label, 
+                    annotation_position="top"
                 )
             
             fig_hist.update_layout(
@@ -462,7 +522,8 @@ def main():
         
         # Add shaded region for critical window
         fig_price.add_vrect(
-            x0=q20, x1=q80,
+            x0=q20.isoformat() if hasattr(q20, 'isoformat') else str(q20), 
+            x1=q80.isoformat() if hasattr(q80, 'isoformat') else str(q80),
             fillcolor="rgba(255, 0, 110, 0.15)",
             layer="below", line_width=0,
             annotation_text="Critical Window",
@@ -471,7 +532,9 @@ def main():
         
         # Median line
         fig_price.add_vline(
-            x=q50, line_dash="dash", line_color="#ff006e",
+            x=q50.isoformat() if hasattr(q50, 'isoformat') else str(q50), 
+            line_dash="dash", 
+            line_color="#ff006e",
             annotation_text="Median tc"
         )
         
