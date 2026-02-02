@@ -160,7 +160,8 @@ def scan_tc_distribution(t_all, p_all, lookbacks, step=5, error_threshold=0.01, 
     """Scan multiple lookback windows to collect tc estimates"""
     tc_list = []
     fits = []
-    total_iterations = sum(max(0, (len(t_all) - lb) // step) for lb in lookbacks if lb < len(t_all))
+    total_iterations = sum(max(0, (len(t_all) - lb) // step + 1) for lb in lookbacks if lb < len(t_all))
+    total_iterations = max(total_iterations, 1)  # Prevent division by zero
     current_iteration = 0
     
     for lb in lookbacks:
@@ -173,7 +174,7 @@ def scan_tc_distribution(t_all, p_all, lookbacks, step=5, error_threshold=0.01, 
             
             current_iteration += 1
             if progress_callback:
-                progress_callback(current_iteration / total_iterations)
+                progress_callback(min(current_iteration / total_iterations, 1.0))
             
             try:
                 res = fit_lppl_window(t_win, p_win)
